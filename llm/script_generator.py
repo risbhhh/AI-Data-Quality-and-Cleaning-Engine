@@ -1,9 +1,9 @@
 import os
+from langchain import HuggingFaceHub
 from langchain.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
 
 def generate_cleaning_script(profile: dict, df_head: str) -> str:
-    """Use LLM to auto-generate a Pandas cleaning script"""
+    """Use Hugging Face model to auto-generate a Pandas cleaning script"""
     template = """
     You are a Python data cleaning assistant.
     The dataset has the following issues:
@@ -16,6 +16,12 @@ def generate_cleaning_script(profile: dict, df_head: str) -> str:
     """
 
     prompt = PromptTemplate(template=template, input_variables=["issues", "df_head"])
-    llm = ChatOpenAI(model="gpt-3.5-turbo", api_key=os.getenv("OPENAI_API_KEY"))
+
+    llm = HuggingFaceHub(
+        repo_id="google/flan-t5-base",
+        model_kwargs={"temperature": 0.2, "max_length": 512},
+        huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN")
+    )
+
     response = llm.invoke(prompt.format(issues=profile, df_head=df_head))
-    return response.content
+    return response
