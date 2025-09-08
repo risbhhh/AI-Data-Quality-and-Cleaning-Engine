@@ -3,8 +3,6 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))  # make repo root im
 
 import streamlit as st
 import pandas as pd
-from ydata_profiling import ProfileReport
-from streamlit_pandas_profiling import st_profile_report
 
 from ingest.loaders import load_file
 from profiling.profiler import clean_dataset
@@ -24,14 +22,24 @@ if uploaded_file is not None:
     st.dataframe(df.head())
 
     # -----------------------------
-    # Profiling
+    # Custom Lightweight Profiling
     # -----------------------------
-    st.write("### 📊 Data Profiling Report")
-    try:
-        profile = ProfileReport(df, title="Data Profiling Report", explorative=True)
-        st_profile_report(profile)
-    except Exception as e:
-        st.error(f"Profiling failed: {e}")
+    st.write("### 📊 Data Quality Report")
+
+    # Missing values
+    st.write("**Missing Values (%):**")
+    st.dataframe(df.isnull().mean() * 100)
+
+    # Basic stats
+    st.write("**Numeric Summary:**")
+    st.dataframe(df.describe())
+
+    # Categorical counts
+    st.write("**Categorical Columns (Top 10 values):**")
+    cat_cols = df.select_dtypes(include=["object", "category"]).columns
+    for col in cat_cols:
+        st.write(f"🔹 {col}")
+        st.write(df[col].value_counts().head(10))
 
     # -----------------------------
     # Cleaning Pipeline
