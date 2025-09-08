@@ -7,6 +7,4 @@ ortools
 pydantic
 langchain
 openai 
-ydata-profiling
-streamlit-pandas-profiling
 pytest
