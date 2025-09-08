@@ -19,6 +19,7 @@ def generate_cleaning_script(profile: dict, df_head: str) -> str:
 
     llm = HuggingFaceHub(
         repo_id="google/flan-t5-base",
+        task="text2text-generation",   # 👈 important fix
         model_kwargs={"temperature": 0.2, "max_length": 512},
         huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN")
     )
