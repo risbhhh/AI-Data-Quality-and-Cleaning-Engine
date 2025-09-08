@@ -1,0 +1,10 @@
+pandas
+numpy
+streamlit
+torch
+scikit-learn
+ortools
+pydantic
+langchain
+openai  # optional; only if you plan to use OpenAI via LangChain
+pytest
