@@ -1,10 +1,6 @@
+streamlit
 pandas
 numpy
-streamlit
-torch
-scikit-learn
-ortools
-pydantic
 langchain
-openai 
-pytest
+langchain-openai
+openai
