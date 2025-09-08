@@ -3,7 +3,7 @@ from langchain_community.llms import HuggingFaceHub
 from langchain.prompts import PromptTemplate
 
 def generate_cleaning_script(profile: dict, df_head: str) -> str:
-    """Use Hugging Face model to auto-generate a Pandas cleaning script"""
+    """Use Hugging Face (via LangChain) to auto-generate a Pandas cleaning script"""
 
     template = """
     You are a Python data cleaning assistant.
@@ -18,14 +18,12 @@ def generate_cleaning_script(profile: dict, df_head: str) -> str:
 
     prompt = PromptTemplate(template=template, input_variables=["issues", "df_head"])
 
-    # ✅ Explicitly pass task argument
     llm = HuggingFaceHub(
         repo_id="google/flan-t5-base",
+        task="text2text-generation",   # 👈 force the task
         huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
         model_kwargs={"temperature": 0.2, "max_length": 512}
     )
-    # Force-set task manually if not handled
-    llm.client.task = "text2text-generation"
 
     response = llm.invoke(prompt.format(issues=profile, df_head=df_head))
     return response
