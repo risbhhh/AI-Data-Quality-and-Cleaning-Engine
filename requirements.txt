@@ -6,5 +6,7 @@ scikit-learn
 ortools
 pydantic
 langchain
-openai  # optional; only if you plan to use OpenAI via LangChain
+openai 
+ydata-profiling
+streamlit-pandas-profiling
 pytest
