@@ -1,60 +1,40 @@
 import sys, os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))  # make repo root importable
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 import streamlit as st
 import pandas as pd
 
 from ingest.loaders import load_file
-from profiling.profiler import clean_dataset
+from profiling.profiler import profile_dataset
+from cleaning.cleaner import clean_dataset
+from llm.script_generator import generate_cleaning_script
 
-# -----------------------------
-# Streamlit UI
-# -----------------------------
 st.set_page_config(page_title="AI Data Quality & Cleaning Engine", layout="wide")
-st.title("🧹 AI Data Quality & Cleaning Engine")
+st.title("🤖 AI Data Quality & Cleaning Engine")
 
 uploaded_file = st.file_uploader("📂 Upload a CSV file", type=["csv"])
 
 if uploaded_file is not None:
-    # Load dataset
     df = load_file(uploaded_file)
-    st.write("### 🔎 Raw Data Preview")
-    st.dataframe(df.head())
+    st.write("### 🔎 Raw Data Preview", df.head())
 
-    # -----------------------------
-    # Custom Lightweight Profiling
-    # -----------------------------
+    # Profiling
     st.write("### 📊 Data Quality Report")
+    report = profile_dataset(df)
+    st.json(report)
 
-    # Missing values
-    st.write("**Missing Values (%):**")
-    st.dataframe(df.isnull().mean() * 100)
+    # LLM cleaning script
+    if st.checkbox("💡 Generate Pandas Cleaning Script (LLM)"):
+        try:
+            code = generate_cleaning_script(report, df.head().to_string())
+            st.code(code, language="python")
+        except Exception as e:
+            st.error(f"LLM script generation failed: {e}")
 
-    # Basic stats
-    st.write("**Numeric Summary:**")
-    st.dataframe(df.describe())
-
-    # Categorical counts
-    st.write("**Categorical Columns (Top 10 values):**")
-    cat_cols = df.select_dtypes(include=["object", "category"]).columns
-    for col in cat_cols:
-        st.write(f"🔹 {col}")
-        st.write(df[col].value_counts().head(10))
-
-    # -----------------------------
-    # Cleaning Pipeline
-    # -----------------------------
-    if st.button("✨ Run Cleaning Pipeline"):
+    # Run cleaning pipeline
+    if st.button("✨ Run Auto-Cleaning Engine"):
         cleaned = clean_dataset(df)
-        st.write("### ✅ Cleaned Data Preview")
-        st.dataframe(cleaned.head())
+        st.write("### ✅ Cleaned Data Preview", cleaned.head())
 
-        # Download button
         csv = cleaned.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            "⬇️ Download Cleaned CSV",
-            csv,
-            "cleaned_dataset.csv",
-            "text/csv",
-            key="download-csv"
-        )
+        st.download_button("⬇️ Download Cleaned CSV", csv, "cleaned_dataset.csv", "text/csv")
