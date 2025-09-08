@@ -1,36 +1,25 @@
 import pandas as pd
+import numpy as np
 
-def clean_dataset(df: pd.DataFrame) -> pd.DataFrame:
-    cleaned_df = df.copy()
+def profile_dataset(df: pd.DataFrame) -> dict:
+    """Generate a profile report: missing values, duplicates, anomalies"""
+    report = {}
 
-    # Fill missing Age with median
-    if "Age" in cleaned_df.columns:
-        cleaned_df["Age"] = cleaned_df["Age"].fillna(cleaned_df["Age"].median())
+    # Missing values
+    missing = df.isnull().sum()
+    report["missing_values"] = {col: int(val) for col, val in missing.items() if val > 0}
 
-    # Fill Embarked missing with mode
-    if "Embarked" in cleaned_df.columns and cleaned_df["Embarked"].notna().any():
-        cleaned_df["Embarked"] = cleaned_df["Embarked"].fillna(cleaned_df["Embarked"].mode()[0])
+    # Duplicates
+    duplicates = df.duplicated().sum()
+    report["duplicates"] = int(duplicates)
 
-    # Replace missing Cabin with "Unknown"
-    if "Cabin" in cleaned_df.columns:
-        cleaned_df["Cabin"] = cleaned_df["Cabin"].fillna("Unknown")
+    # Anomalies (z-score > 3)
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+    anomalies = {}
+    for col in numeric_cols:
+        if df[col].std() > 0:  # avoid division by zero
+            z_scores = (df[col] - df[col].mean()) / df[col].std()
+            anomalies[col] = int((abs(z_scores) > 3).sum())
+    report["anomalies"] = anomalies
 
-    # Cap Fare at 95th percentile
-    if "Fare" in cleaned_df.columns:
-        fare_cap = cleaned_df["Fare"].quantile(0.95)
-        cleaned_df["Fare"] = cleaned_df["Fare"].clip(upper=fare_cap)
-
-    # Drop messy columns if present
-    for col in ["Ticket", "Name"]:
-        if col in cleaned_df.columns:
-            cleaned_df = cleaned_df.drop(columns=[col])
-
-    # Encode Sex
-    if "Sex" in cleaned_df.columns:
-        cleaned_df["Sex"] = cleaned_df["Sex"].map({"male": 1, "female": 0})
-
-    # One-hot encode Embarked
-    if "Embarked" in df.columns:  # original df, before we dropped
-        cleaned_df = pd.get_dummies(cleaned_df, columns=["Embarked"], prefix="Embarked")
-
-    return cleaned_df
+    return report
