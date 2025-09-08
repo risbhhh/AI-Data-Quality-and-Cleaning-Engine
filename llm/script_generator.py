@@ -1,5 +1,5 @@
 import os
-from langchain import HuggingFaceHub
+from langchain_community.llms import HuggingFaceHub
 from langchain.prompts import PromptTemplate
 
 def generate_cleaning_script(profile: dict, df_head: str) -> str:
