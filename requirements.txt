@@ -1,6 +1,6 @@
 streamlit
 pandas
 numpy
-transformers
+transformers>=4.33
 torch
 huggingface_hub
