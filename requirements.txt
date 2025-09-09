@@ -1,6 +1,6 @@
 streamlit
 pandas
 numpy
-langchain
-langchain-community>=0.0.18
+transformers
+torch
 huggingface_hub
