@@ -22,7 +22,7 @@ def generate_cleaning_script(profile: dict, df_head: str) -> str:
     generator = pipeline(
         task="text2text-generation",   # ✅ correct task for flan-t5
         model="google/flan-t5-base",
-        use_auth_token=os.getenv("HUGGINGFACEHUB_API_TOKEN")  # ✅ for private/token usage
+        token=os.getenv("HUGGINGFACEHUB_API_TOKEN")  # ✅ fixed
     )
 
     result = generator(final_prompt, max_length=512, temperature=0.2)
